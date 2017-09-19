@@ -1,3 +1,14 @@
+### Version 9.5.1
+* When specified, Content-Type header is now included on OkHttp requests lacking a body.
+* Sets empty HttpEntity if apache request body is null.
+
+### Version 9.5
+* Introduces `feign-java8` with support for `java.util.Optional`
+* Adds `Feign.Builder.mapAndDecode()` to allow response preprocessing before decoding it.
+
+### Version 9.4.1
+* 404 responses are no longer swallowed for `void` return types.
+
 ### Version 9.4
 * Adds Builder class to JAXBDecoder for disabling namespace-awareness (defaults to true).
 

@@ -145,6 +145,8 @@ public final class ApacheHttpClient implements Client {
       }
 
       requestBuilder.setEntity(entity);
+    } else {
+      requestBuilder.setEntity(new ByteArrayEntity(new byte[0]));
     }
 
     return requestBuilder.build();
@@ -157,6 +159,9 @@ public final class ApacheHttpClient implements Client {
         Collection<String> values = entry.getValue();
         if (values != null && !values.isEmpty()) {
           contentType = ContentType.parse(values.iterator().next());
+          if (contentType.getCharset() == null) {
+            contentType = contentType.withCharset(request.charset());
+          }
           break;
         }
       }

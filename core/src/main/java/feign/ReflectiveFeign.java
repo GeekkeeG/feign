@@ -214,11 +214,11 @@ public class ReflectiveFeign extends Feign {
       if (metadata.queryMapIndex() != null) {
         // add query map parameters after initial resolve so that they take
         // precedence over any predefined values
-        template = addQueryMapQueryParameters(argv, template);
+        template = addQueryMapQueryParameters((Map<String, Object>) argv[metadata.queryMapIndex()], template);
       }
 
       if (metadata.headerMapIndex() != null) {
-        template = addHeaderMapHeaders(argv, template);
+        template = addHeaderMapHeaders((Map<String, Object>) argv[metadata.headerMapIndex()], template);
       }
 
       return template;
@@ -242,11 +242,8 @@ public class ReflectiveFeign extends Feign {
     }
 
     @SuppressWarnings("unchecked")
-    private RequestTemplate addHeaderMapHeaders(Object[] argv, RequestTemplate mutable) {
-      Map<Object, Object> headerMap = (Map<Object, Object>) argv[metadata.headerMapIndex()];
-      for (Entry<Object, Object> currEntry : headerMap.entrySet()) {
-        checkState(currEntry.getKey().getClass() == String.class, "HeaderMap key must be a String: %s", currEntry.getKey());
-
+    private RequestTemplate addHeaderMapHeaders(Map<String, Object> headerMap, RequestTemplate mutable) {
+      for (Entry<String, Object> currEntry : headerMap.entrySet()) {
         Collection<String> values = new ArrayList<String>();
 
         Object currValue = currEntry.getValue();
@@ -260,31 +257,29 @@ public class ReflectiveFeign extends Feign {
           values.add(currValue == null ? null : currValue.toString());
         }
 
-        mutable.header((String) currEntry.getKey(), values);
+        mutable.header(currEntry.getKey(), values);
       }
       return mutable;
     }
 
     @SuppressWarnings("unchecked")
-    private RequestTemplate addQueryMapQueryParameters(Object[] argv, RequestTemplate mutable) {
-      Map<Object, Object> queryMap = (Map<Object, Object>) argv[metadata.queryMapIndex()];
-      for (Entry<Object, Object> currEntry : queryMap.entrySet()) {
-        checkState(currEntry.getKey().getClass() == String.class, "QueryMap key must be a String: %s", currEntry.getKey());
-
+    private RequestTemplate addQueryMapQueryParameters(Map<String, Object> queryMap, RequestTemplate mutable) {
+      for (Entry<String, Object> currEntry : queryMap.entrySet()) {
         Collection<String> values = new ArrayList<String>();
 
+        boolean encoded = metadata.queryMapEncoded();
         Object currValue = currEntry.getValue();
         if (currValue instanceof Iterable<?>) {
           Iterator<?> iter = ((Iterable<?>) currValue).iterator();
           while (iter.hasNext()) {
             Object nextObject = iter.next();
-            values.add(nextObject == null ? null : nextObject.toString());
+            values.add(nextObject == null ? null : encoded ? nextObject.toString() : RequestTemplate.urlEncode(nextObject.toString()));
           }
         } else {
-          values.add(currValue == null ? null : currValue.toString());
+          values.add(currValue == null ? null : encoded ? currValue.toString() : RequestTemplate.urlEncode(currValue.toString()));
         }
 
-        mutable.query(metadata.queryMapEncoded(), (String) currEntry.getKey(), values);
+        mutable.query(true, encoded ? currEntry.getKey() : RequestTemplate.urlEncode(currEntry.getKey()), values);
       }
       return mutable;
     }

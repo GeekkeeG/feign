@@ -5,7 +5,7 @@
   <parent>
     <groupId>io.github.openfeign</groupId>
     <artifactId>parent</artifactId>
-    <version>9.4.1-SNAPSHOT</version>
+    <version>9.5.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>feign-core</artifactId>
@@ -20,6 +20,7 @@
     <dependency>
       <groupId>org.jvnet</groupId>
       <artifactId>animal-sniffer-annotation</artifactId>
+      <optional>true</optional>
     </dependency>
 
     <dependency>

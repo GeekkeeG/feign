@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.github.openfeign</groupId>
     <artifactId>parent</artifactId>
-    <version>9.4.1-SNAPSHOT</version>
+    <version>9.5.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>feign-httpclient</artifactId>
@@ -31,6 +31,12 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>feign-core</artifactId>
       <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>feign-jaxrs</artifactId>
       <scope>test</scope>
     </dependency>
 

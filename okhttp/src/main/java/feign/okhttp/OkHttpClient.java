@@ -25,7 +25,6 @@ import okhttp3.ResponseBody;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -63,13 +62,12 @@ public final class OkHttpClient implements Client {
       }
 
       for (String value : input.headers().get(field)) {
+        requestBuilder.addHeader(field, value);
         if (field.equalsIgnoreCase("Content-Type")) {
           mediaType = MediaType.parse(value);
           if (input.charset() != null) {
             mediaType.charset(input.charset());
           }
-        } else {
-          requestBuilder.addHeader(field, value);
         }
       }
     }
@@ -80,10 +78,13 @@ public final class OkHttpClient implements Client {
 
     byte[] inputBody = input.body();
     boolean isMethodWithBody = "POST".equals(input.method()) || "PUT".equals(input.method());
-    if (isMethodWithBody && inputBody == null) {
-      // write an empty BODY to conform with okhttp 2.4.0+
-      // http://johnfeng.github.io/blog/2015/06/30/okhttp-updates-post-wouldnt-be-allowed-to-have-null-body/
-      inputBody = new byte[0];
+    if (isMethodWithBody) {
+      requestBuilder.removeHeader("Content-Type");
+      if (inputBody == null) {
+        // write an empty BODY to conform with okhttp 2.4.0+
+        // http://johnfeng.github.io/blog/2015/06/30/okhttp-updates-post-wouldnt-be-allowed-to-have-null-body/
+        inputBody = new byte[0];
+      }
     }
 
     RequestBody body = inputBody != null ? RequestBody.create(mediaType, inputBody) : null;
@@ -106,6 +107,9 @@ public final class OkHttpClient implements Client {
 
   private static feign.Response.Body toBody(final ResponseBody input) throws IOException {
     if (input == null || input.contentLength() == 0) {
+      if (input != null) {
+        input.close();
+      }
       return null;
     }
     final Integer length = input.contentLength() >= 0 && input.contentLength() <= Integer.MAX_VALUE ?
